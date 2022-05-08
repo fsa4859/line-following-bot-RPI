@@ -70,6 +70,7 @@ int main() {
   detectObstacleCog = cog_run(detectObstacle, 128);
   do    //decide path when you reach the obstacle
   {
+    //Intersectionhandler will make it drive forward
     if(obstacleDetected)
     {
       if(numIntersection==3)
@@ -155,6 +156,7 @@ void handleIntersectionDetected() {
     
     case 4:
       path_four();
+      break;
     
     default:
       driveForward();
@@ -261,9 +263,10 @@ void path_one(){
      
      case 14:
       turnRight();
+      atA4();
       break;
       //its all common after this can set numPath to 4
-      atA4();
+      
              
      default:
       driveForward();
@@ -305,9 +308,9 @@ void path_two()
     
     case 14:
       turnRight();
+      atA4();
       break;
-      atA4();  
-          
+           
     default:
       driveForward();
       pause(550); // Clear intersection
@@ -335,6 +338,7 @@ void path_three(){
       driveForward();
       pause(550);
       atA4();
+      break;
             
   default:
       driveForward();
@@ -361,6 +365,7 @@ void path_four()
     case 11:
       stopWheels();  
       cog_end(followLineCog);
+      break;
              
     default:
       driveForward();
