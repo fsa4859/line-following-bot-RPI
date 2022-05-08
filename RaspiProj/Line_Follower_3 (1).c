@@ -17,17 +17,17 @@
 #define INTERSECTION_DETECTION_LED  5
 
 #define MAX_OBJECT_DISTANCE         15
-#define MAX_OBSTACLE_DISTANCE       10
+#define MAX_OBSTACLE_DISTANCE       5
 
 #define FORWARD_SPEED               45
 #define STOP_SPEED                  20
 #define ADJUST_SPEED                60
 #define ADJUST_DELAY                10
 #define TURN_SPEED                  80
-#define TURN_DELAY                  1550
+#define TURN_DELAY                  1500
 //#define EXTRA_RIGHT_TURN_DELAY      300
-#define REVERSE_SPEED               65
-#define REVERSE_DELAY               1750
+#define REVERSE_SPEED               70
+#define REVERSE_DELAY               1700
 #define BACKINGUP_DELAY             1000
 
 // Headers
@@ -69,19 +69,22 @@ int main() {
   detectObstacleCog = cog_run(detectObstacle, 128);
   
   do {
-    if(numIntersection == 3) // i2
+    if(obstacleDetected)
     {
-      numPath=1;
-    }
-    else if(numIntersection == 4) // i3
-    {
-      numPath=2;
-    }
-    else if(numIntersection == 6) // i5
-    {
-      numPath=3;
-    }
-  } while(!obstacleDetected);  
+      if(numIntersection == 3) // i2
+      {
+        numPath=1;
+      }
+      else if(numIntersection == 4) // i3
+      {
+        numPath=2;
+      }
+      else if(numIntersection == 6) // i5
+      {
+        numPath=3;
+      }      
+    }              
+  }while(!obstacleDetected);  
 }  
 
 void followLine() {
@@ -89,7 +92,10 @@ void followLine() {
     int leftIR = input(LEFT_IR_PIN);
     int rightIR = input(RIGHT_IR_PIN);
          
-    if(leftIR == 1 && rightIR == 0) {
+    if(obstacleDetected) {
+      reverseDirection();
+      obstacleDetected = false;
+    } else if(leftIR == 1 && rightIR == 0) {
       adjustLeft();
     } else if(leftIR == 0 && rightIR == 1) {
       adjustRight();
@@ -112,11 +118,9 @@ void detectObstacle()
     
     if(obstacleDetected) {
      // printf("\nobstacle detected"); 
-      stopWheels();
       high(OBSTACLE_DETECTION_LED);
       pause(750);
       low(OBSTACLE_DETECTION_LED);
-      reverseDirection();
       cog_end(detectObstacleCog);
     } 
   }
@@ -201,14 +205,14 @@ void turnLeft() {
 }
  
 void stopWheels() {
-  printf("\nstopping wheels");
+  //printf("\nstopping wheels");
   servo_speed(RIGHT_WHEEL_PIN, 0);
   servo_speed(LEFT_WHEEL_PIN, 0);
 }
 
 void reverseDirection(){
-  cog_end(followLineCog);
-  
+ // cog_end(followLineCog);
+  stopWheels();
   //printf("Backing up");
   servo_speed(RIGHT_WHEEL_PIN, FORWARD_SPEED );
   servo_speed(LEFT_WHEEL_PIN, (FORWARD_SPEED - 7) * -1);
@@ -219,7 +223,7 @@ void reverseDirection(){
   servo_speed(LEFT_WHEEL_PIN, REVERSE_SPEED);
   pause(REVERSE_DELAY);
   
-  followLineCog = cog_run(followLine, 128);
+  //followLineCog = cog_run(followLine, 128);
 }  
 
 void reachObstacle()
@@ -259,9 +263,7 @@ void path_one(){
       break;
      
      case 10:
-      cog_end(followLineCog);
-      pause(750);
-      reverseDirection();
+      reverseDirection();    
       break;
 
      case 12:
