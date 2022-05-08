@@ -24,10 +24,10 @@
 #define ADJUST_SPEED                60
 #define ADJUST_DELAY                10
 #define TURN_SPEED                  80
-#define TURN_DELAY                  1800
+#define TURN_DELAY                  1550
 //#define EXTRA_RIGHT_TURN_DELAY      300
 #define REVERSE_SPEED               65
-#define REVERSE_DELAY               1800
+#define REVERSE_DELAY               1750
 #define BACKINGUP_DELAY             1000
 
 // Headers
@@ -67,6 +67,21 @@ static volatile bool lookForObstacle = true;
 int main() {  
   followLineCog = cog_run(followLine, 128);
   detectObstacleCog = cog_run(detectObstacle, 128);
+  
+  do {
+    if(numIntersection == 3) // i2
+    {
+      numPath=1;
+    }
+    else if(numIntersection == 4) // i3
+    {
+      numPath=2;
+    }
+    else if(numIntersection == 6) // i5
+    {
+      numPath=3;
+    }
+  } while(!obstacleDetected);  
 }  
 
 void followLine() {
@@ -96,21 +111,7 @@ void detectObstacle()
     obstacleDetected = cmDist != 0 && cmDist < MAX_OBSTACLE_DISTANCE;
     
     if(obstacleDetected) {
-      printf("\nobstacle detected");
-
-      if(numIntersection == 3) // i2
-      {
-        numPath=1;
-      }
-      else if(numIntersection == 4) // i3
-      {
-        numPath=2;
-      }
-      else if(numIntersection == 6) // i5
-      {
-        numPath=3;
-      }
-      
+     // printf("\nobstacle detected"); 
       stopWheels();
       high(OBSTACLE_DETECTION_LED);
       pause(750);
@@ -128,7 +129,7 @@ void handleIntersectionDetected() {
   if(numIntersection==1) //clear the merge (change this later, the comparisions dont make sense)
   {
     driveForward();
-    pause(450);
+    pause(400);
   }    
   else if(numIntersection > 1) {
     intersectionBlinkCog = cog_run(intersectionBlink, 128);
@@ -208,12 +209,12 @@ void stopWheels() {
 void reverseDirection(){
   cog_end(followLineCog);
   
-  printf("Backing up");
+  //printf("Backing up");
   servo_speed(RIGHT_WHEEL_PIN, FORWARD_SPEED );
   servo_speed(LEFT_WHEEL_PIN, (FORWARD_SPEED - 7) * -1);
   pause(BACKINGUP_DELAY);
   
-  printf("\nReversing direction");
+  //printf("\nReversing direction");
   servo_speed(RIGHT_WHEEL_PIN, REVERSE_SPEED);
   servo_speed(LEFT_WHEEL_PIN, REVERSE_SPEED);
   pause(REVERSE_DELAY);
@@ -258,7 +259,8 @@ void path_one(){
       break;
      
      case 10:
-      stopWheels();
+      cog_end(followLineCog);
+      pause(750);
       reverseDirection();
       break;
 
@@ -303,7 +305,7 @@ void path_two()
       break;
       
     case 12:
-      stopWheels();
+      //stopWheels();
       reverseDirection();
       break;
     
@@ -367,7 +369,7 @@ void path_four()
       turnRight();
       break;
       
-    case 11:
+    case 11://b5
       stopWheels();  
       cog_end(followLineCog);
       break;
