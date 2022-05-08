@@ -26,6 +26,7 @@
 #define TURN_SPEED                  50
 #define TURN_DELAY                  1500
 #define EXTRA_RIGHT_TURN_DELAY      300
+#define REVERSE_DELAY               1500
 
 // Headers
 void followLine();
@@ -39,7 +40,14 @@ void adjustLeft();
 void turnRight();
 void turnLeft();
 void stopWheels();
-void stopDriving();
+//void stopDriving();
+void reverseDirection();
+void reachObstacle();
+void atA4();
+void path_one();
+void path_two();
+void path_three();
+void path_four();
 
 // Cogs
 volatile int *followLineCog;
@@ -59,7 +67,7 @@ int main() {
   //pathDecisionCog=cog_run(pathDecision,128);
   
   // Home to obstacle
-  detectObstacleCog = cog_run(detectObstacle, 128)
+  detectObstacleCog = cog_run(detectObstacle, 128);
   do    //decide path when you reach the obstacle
   {
     if(obstacleDetected)
@@ -77,7 +85,8 @@ int main() {
         numPath=3;
       }
     }                             
-  }while(!obstacleDetected)
+  }while(!obstacleDetected);
+ // for the next time
 }  
 
 void followLine() {
@@ -97,58 +106,23 @@ void followLine() {
   }         
 }  
 
-/*void detectObject() {
-  while(1) {
-    int cmDist = ping_cm(LEFT_ULTRASONIC_PIN);
-    bool objectDetected = (cmDist > 0 && cmDist < MAX_OBJECT_DISTANCE);
+void detectObstacle() 
+{
+  while(1) 
+  {
+    int cmDist=ping_cm(ULTRASONIC_PIN);
+    obstacleDetected = cmDist != 0 && cmDist < MAX_OBSTACLE_DISTANCE;
     
-    if(objectDetected) {
-      numObjectsDetected++;
-      
-      high(OBJECT_DETECTION_LED);
-      pause(750);
-      low(OBJECT_DETECTION_LED);
-              
-       if(numObjectsDetected == 2) {
-         cog_end(detectObjectCog);
-       }
-     
-      pause(2500);
-    }
-  }
-}
-*/
-
-void detectObstacle() {
-  while(1) {
-    //int ultrasonicPin = lookForObstacle ? RIGHT_ULTRASONIC_PIN : LEFT_ULTRASONIC_PIN;
-    if (lookForObstacle)
-    {
-      int cmDist=ping_cm(ultrasonicPin);
-      obstacleDetected = cmDist != 0 && cmDist < MAX_OBSTACLE_DISTANCE;
-      if(obstacleDetected) {
-       high(OBSTACLE_DETECTION_LED);
-       pause(750);
-       low(OBSTACLE_DETECTION_LED);
-       cog_end(detectObstacleCog);
-       stopWheels();
-       reverseDirection();
-      }
+    if(obstacleDetected) {
+        high(OBSTACLE_DETECTION_LED);
+        pause(750);
+        low(OBSTACLE_DETECTION_LED);
+        cog_end(detectObstacleCog);
+        stopWheels();
+        reverseDirection();
     } 
-    }
-  }         
-    //int cmDist = ping_cm(ultrasonicPin);
-    //obstacleDetected = cmDist != 0 && cmDist < MAX_OBSTACLE_DISTANCE;
-   
-    //if(obstacleDetected) {
-       //high(OBSTACLE_DETECTION_LED);
-       //pause(750);
-       //low(OBSTACLE_DETECTION_LED);
-             
-       //cog_end(detectObstacleCog);
-    //}
-  //}
-//}
+  }
+}         
 
 void handleIntersectionDetected() {
   numIntersection++;
@@ -156,7 +130,7 @@ void handleIntersectionDetected() {
   if(numIntersection==1) //clear the merge (change this later, the comparisions dont make sense)
   {
     driveForward();
-    pause(100);
+    pause(110);
   }    
   else if(numIntersection > 1) {
     intersectionBlinkCog = cog_run(intersectionBlink, 128);
@@ -166,6 +140,7 @@ void handleIntersectionDetected() {
   //its a nested switch but broken up to look better
   switch(numPath) {
     
+    // after a4 can add common path
     case 1:
       path_one();
       break;
@@ -177,6 +152,9 @@ void handleIntersectionDetected() {
     case 3:
       path_three();
       break;
+    
+    case 4:
+      path_four();
     
     default:
       driveForward();
@@ -231,55 +209,61 @@ void stopWheels() {
 void reverseDirection(){
   servo_speed(RIGHT_WHEEL_PIN, TURN_SPEED);
   servo_speed(LEFT_WHEEL_PIN, TURN_SPEED);
-  pause(TURN_DELAY + EXTRA_RIGHT_TURN_DELAY);
+  pause(REVERSE_DELAY); //play with this delay
   //todo
 }  
-}  
 
+void reachObstacle()
+{
+  driveForward();
+  pause(400);
+  obstacleDetected=false;
+  detectObstacleCog = cog_run(detectObstacle, 128);
+}   
+
+void atA4()
+{
+  numIntersection=1;
+  numPath=4;
+} 
 
 // obstacle at i2
 void path_one(){
-
+  
    switch(numIntersection) {
      
      case 4: // Back at i1
-     turnRight();
-     break;
+      turnRight();
+      break;
      
      case 5: // B1
       turnRight();
       break;
-     
       
      case 8: // B4
       turnRight();
-      //lookForObstacleOnRight = false;
-      driveForward(); // or follow line
-      pause(500); // Give time for turn
       break;
+     
      case 9: // i4
+     // goto i5 and come back
       turnLeft();
       break;
-      
-      case 12:
-      while(cmDist > MAX_OBSTACLE_DISTANCE){
-      } 
+     
+     case 10:
       stopWheels();
       reverseDirection();
       break;
-      
-      case 15:
-        turnRight();
-        break;
-        
-      case 18:
-        turnRight();
-        break;
-        
-       
-      case 24:
-        stopWheels();  
-        cog_end(followLineCog);
+
+     case 12:
+      // goto obstacle and turn
+      reachObstacle();
+      break;
+     
+     case 14:
+      turnRight();
+      break;
+      //its all common after this can set numPath to 4
+      atA4();
              
      default:
       driveForward();
@@ -291,115 +275,96 @@ void path_one(){
   
 
 // obstacle at i3
-void path_two() {
+void path_two() 
+{
   switch(numIntersection){
     case 6: // Back at i1
-     turnRight();
-     break;
-     
-     case 7: // B1
-     turnRight();
-     break;
-     
-      
-     case 10 : // B4
       turnRight();
-      //lookForObstacleOnRight = false;
-      driveForward(); // or follow line
-      pause(500); // Give time for turn
       break;
-     case 11: // i4
+    
+    case 7: // B1
+      turnRight();
+      break;
+    
+    case 10 : // B4
+      turnRight();
+      break;
+    
+    case 11: // i4
       turnLeft();
       break;
       
-      case 12:
-        stopWheels();
-        reverseDirection();
-        break;
-      
-      case 13:
-       while(cmDist > MAX_OBSTACLE_DISTANCE){
-       } 
-       stopWheels();
-       reverseDirection();
-       break;
-      
-      case 14:
-        turnRight();
-        break;
-        
-      case 15:
-        turnRight();
-        break;
-        
-      case 18:
-        turnRight();
-        break;
-        
-      case 20:
-        turnRight();
-        break;
-        
-       
-      case 24:
-        stopWheels();  
-        cog_end(followLineCog);
-             
-     default:
+    case 12:
+      stopWheels();
+      reverseDirection();
+      break;
+    
+    case 13:
+      reachObstacle();
+      break;
+    
+    case 14:
+      turnRight();
+      break;
+      atA4();  
+          
+    default:
       driveForward();
       pause(550); // Clear intersection
       break;
-  }
-  
-  
-  
+  }  
 }
 
 // obstalce at i5
 void path_three(){
   switch(numIntersection){
+   
    case 10: // Back at i1
      turnRight();
      break;
-     
-     case 11: // B1
+   
+   case 11: // B1
      turnRight();
      break;
-     
-      
-     case 10 : // B4
-      turnRight();
-      //lookForObstacleOnRight = false;
-      driveForward(); // or follow line
-      pause(500); // Give time for turn
-      break;
-     case 14: // i4
-      turnright();
-      break;
-      
-      case 16:
-       turnright();
-       break;
-     
-      
-      case 19:
-      turnright();
-       break;
-      
-      case 21:
-        turnRight();
-        break;
-        
-      case 25:
-       stopWheels();  
-       cog_end(followLineCog);
-      
    
+   case 14: // B4
+      turnRight();
+      break;
+      
+   case 15:
+      driveForward();
+      pause(550);
+      atA4();
+            
   default:
       driveForward();
       pause(550); // Clear intersection
       break;
-  }
-  
-  
+  } 
 }        
+
+void path_four()
+{
+  switch(numIntersection)
+  {
+    case 2:
+      turnRight();
+      break;
+    case 5:
+      turnRight();
+      break;
+      
+    case 7:
+      turnRight();
+      break;
+      
+    case 11:
+      stopWheels();  
+      cog_end(followLineCog);
+             
+    default:
+      driveForward();
+      pause(550); // Clear intersection
+      break;
+  }
+}
