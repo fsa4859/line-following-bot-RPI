@@ -238,7 +238,7 @@ void stopWheels() {
 
 void reverseDirection(){
  // cog_end(followLineCog);
-  stopWheels();
+  stopWheels(); //adding this reduced the slip for some reason
   //printf("Backing up");
   servo_speed(RIGHT_WHEEL_PIN, FORWARD_SPEED );
   servo_speed(LEFT_WHEEL_PIN, (FORWARD_SPEED - 7) * -1);
