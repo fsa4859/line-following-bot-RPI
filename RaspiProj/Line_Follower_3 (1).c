@@ -154,7 +154,7 @@ void detectObstacle()
 
 void handleIntersectionDetected() {
   numIntersection++;
-  printf("\n%d",numIntersection);
+  //printf("\n%d",numIntersection);
   
   if(numIntersection==1) //clear the merge (change this later, the comparisions dont make sense)
   {
