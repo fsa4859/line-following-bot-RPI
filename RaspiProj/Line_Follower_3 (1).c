@@ -56,18 +56,19 @@ volatile int *followLineCog;
 //volatile int *detectObjectCog;
 volatile int *detectObstacleCog;
 volatile int *intersectionBlinkCog;
-volatile int *pathDecisionCog;
+//volatile int *pathDecisionCog;
 
 static volatile int numIntersection = 0;
 static volatile int numObjectsDetected = 0;
 static volatile int numPath=0;
 static volatile bool obstacleDetected = false;
-static volatile bool lookForObstacle = true;
+//static volatile bool lookForObstacle = true;
+static volatile bool pathDetected=false;
  
 int main() {  
   followLineCog = cog_run(followLine, 128);
   detectObstacleCog = cog_run(detectObstacle, 128);
-  
+ /* 
   do {
     if(obstacleDetected)
     {
@@ -84,7 +85,7 @@ int main() {
         numPath=3;
       }      
     }              
-  }while(!obstacleDetected);  
+  }while(!obstacleDetected);  */
 }  
 
 void followLine() {
@@ -121,6 +122,31 @@ void detectObstacle()
       high(OBSTACLE_DETECTION_LED);
       pause(750);
       low(OBSTACLE_DETECTION_LED);
+      if(!pathDetected)
+      {
+        pathDetected=true;
+        switch(numIntersection)
+        {
+          case 3:
+            numPath=1;
+            break;
+            
+          case 4:
+            numPath=2;
+            break;
+            
+          case 6:
+            numPath=3;
+            break;
+            
+          default:
+            //error
+            high(OBSTACLE_DETECTION_LED);
+            pause(750);
+            low(OBSTACLE_DETECTION_LED);
+            break;      
+        }              
+      }        
       cog_end(detectObstacleCog);
     } 
   }
