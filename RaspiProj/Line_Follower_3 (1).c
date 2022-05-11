@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include "ping.h"
 
+#define OBJECT_PIN
+
 #define RIGHT_WHEEL_PIN             12
 #define LEFT_WHEEL_PIN              13
 #define LEFT_IR_PIN                 16
@@ -24,11 +26,12 @@
 #define ADJUST_SPEED                60
 #define ADJUST_DELAY                10
 #define TURN_SPEED                  80
-#define TURN_DELAY                  1500
+#define TURN_DELAY                  1550
 //#define EXTRA_RIGHT_TURN_DELAY      300
 #define REVERSE_SPEED               70
 #define REVERSE_DELAY               1700
 #define BACKINGUP_DELAY             1000
+#define DETECTION_DELAY             1000
 
 // Headers
 void followLine();
@@ -86,12 +89,20 @@ int main() {
       }      
     }              
   }while(!obstacleDetected);  */
+ 
 }  
 
 void followLine() {
   while(1) {
     int leftIR = input(LEFT_IR_PIN);
     int rightIR = input(RIGHT_IR_PIN);
+    
+     // Check state of pin and give RPi time to execute commands
+    if(input(OBJECT_PIN)==1)
+    {
+      stopwheels();
+      pause(DETECTION_DELAY);
+    }      
          
     if(obstacleDetected) {
       reverseDirection();
