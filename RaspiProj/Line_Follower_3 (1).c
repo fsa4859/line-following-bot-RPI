@@ -21,16 +21,16 @@
 #define MAX_OBJECT_DISTANCE         15
 #define MAX_OBSTACLE_DISTANCE       5
 
-#define FORWARD_SPEED               45
+#define FORWARD_SPEED               30
 #define STOP_SPEED                  20
 #define ADJUST_SPEED                60
 #define ADJUST_DELAY                10
-#define TURN_SPEED                  80
-#define TURN_DELAY                  1550
-//#define EXTRA_RIGHT_TURN_DELAY      300
-#define REVERSE_SPEED               70
+#define TURN_SPEED                  55
+#define TURN_DELAY                  900
+#define EXTRA_TURN_DELAY            900
+#define REVERSE_SPEED               55
 #define REVERSE_DELAY               1700
-#define BACKINGUP_DELAY             1000
+#define BACKINGUP_DELAY             700
 #define DETECTION_DELAY             1000
 
 // Headers
@@ -98,11 +98,11 @@ void followLine() {
     int rightIR = input(RIGHT_IR_PIN);
     
      // Check state of pin and give RPi time to execute commands
-    if(input(OBJECT_PIN)==1)
+    /*if(input(OBJECT_PIN)==1)
     {
       stopwheels();
       pause(DETECTION_DELAY);
-    }      
+    }  */    
          
     if(obstacleDetected) {
       reverseDirection();
@@ -230,14 +230,18 @@ void adjustLeft() {
 }
 
 void turnRight() {
-  servo_speed(RIGHT_WHEEL_PIN, 0);
+  driveForward();
+  pause(EXTRA_TURN_DELAY);
+  servo_speed(RIGHT_WHEEL_PIN, TURN_SPEED);
   servo_speed(LEFT_WHEEL_PIN, TURN_SPEED);
   pause(TURN_DELAY);
 }
  
 void turnLeft() {
+  driveForward();
+  pause(EXTRA_TURN_DELAY);
   servo_speed(RIGHT_WHEEL_PIN, TURN_SPEED * -1);
-  servo_speed(LEFT_WHEEL_PIN, 0);
+  servo_speed(LEFT_WHEEL_PIN, TURN_SPEED * -1);
   pause(TURN_DELAY);
 }
  
