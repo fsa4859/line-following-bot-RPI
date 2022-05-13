@@ -23,15 +23,17 @@
 
 #define FORWARD_SPEED               30
 #define STOP_SPEED                  20
-#define ADJUST_SPEED                60
-#define ADJUST_DELAY                10
-#define TURN_SPEED                  55
-#define TURN_DELAY                  900
-#define EXTRA_TURN_DELAY            900
+#define ADJUST_SPEED                50
 #define REVERSE_SPEED               55
-#define REVERSE_DELAY               1700
-#define BACKINGUP_DELAY             700
+#define TURN_SPEED                  55
+
+#define ADJUST_DELAY                10
+#define TURN_DELAY                  900
+#define EXTRA_TURN_DELAY            1900
+#define REVERSE_DELAY               1500
+#define BACKINGUP_DELAY             1400
 #define DETECTION_DELAY             1000
+#define KNOCKOFF_DELAY              1500
 
 // Headers
 void followLine();
@@ -56,21 +58,25 @@ void path_four();
 
 // Cogs
 volatile int *followLineCog;
-//volatile int *detectObjectCog;
+volatile int *detectObjectCog;
 volatile int *detectObstacleCog;
 volatile int *intersectionBlinkCog;
 //volatile int *pathDecisionCog;
 
 static volatile int numIntersection = 0;
-static volatile int numObjectsDetected = 0;
+//static volatile int numObjectsDetected = 0;
 static volatile int numPath=0;
 static volatile bool obstacleDetected = false;
-//static volatile bool lookForObstacle = true;
+static volatile bool lookForObstacle = true;
 static volatile bool pathDetected=false;
+//static volatile bool B1A4=false;
+static volatile bool B4A1=false;
+static volatile bool objectDetected=false;
  
 int main() {  
   followLineCog = cog_run(followLine, 128);
-  detectObstacleCog = cog_run(detectObstacle, 128);
+  detectObstacleCog = cog_run(detectObstacle, 128)
+  detectObjectCog=cog_run(objectCheck,128)
  /* 
   do {
     if(obstacleDetected)
@@ -89,11 +95,24 @@ int main() {
       }      
     }              
   }while(!obstacleDetected);  */
+  while(lookForObject) //continuously check the pin state
+  {
+    int obj=input(OBJECT_PIN);
+    if(obj==1)
+    {
+      objectDetected=true; //use objectDetected in followLine() and knockoff()
+    }
+    else
+    {
+      objectDetected=false;
+    }            
+  }    
  
 }  
 
 void followLine() {
   while(1) {
+    knockoff(); //incase theres and object the hold linefollowing   
     int leftIR = input(LEFT_IR_PIN);
     int rightIR = input(RIGHT_IR_PIN);
     
@@ -149,13 +168,7 @@ void detectObstacle()
           case 6:
             numPath=3;
             break;
-            
-          default:
-            //error
-            high(OBSTACLE_DETECTION_LED);
-            pause(750);
-            low(OBSTACLE_DETECTION_LED);
-            break;      
+                
         }              
       }        
       cog_end(detectObstacleCog);
@@ -170,7 +183,7 @@ void handleIntersectionDetected() {
   if(numIntersection==1) //clear the merge (change this later, the comparisions dont make sense)
   {
     driveForward();
-    pause(400);
+    pause(700);
   }    
   else if(numIntersection > 1) {
     intersectionBlinkCog = cog_run(intersectionBlink, 128);
@@ -224,22 +237,60 @@ void adjustRight() {
 }
 
 void adjustLeft() {
-  servo_speed(RIGHT_WHEEL_PIN, ADJUST_SPEED * -1);
+  servo_speed(RIGHT_WHEEL_PIN, ADJUST_SPEED * -1-30);
   servo_speed(LEFT_WHEEL_PIN, STOP_SPEED);
   pause(ADJUST_DELAY);
 }
 
 void turnRight() {
-  driveForward();
-  pause(EXTRA_TURN_DELAY);
-  servo_speed(RIGHT_WHEEL_PIN, TURN_SPEED);
-  servo_speed(LEFT_WHEEL_PIN, TURN_SPEED);
-  pause(TURN_DELAY);
+  if(B4A1)
+  {
+    //failed tests
+    /*
+    driveForward();
+    pause(EXTRA_TURN_DELAY); //lineup
+    servo_speed(RIGHT_WHEEL_PIN, TURN_SPEED);
+    servo_speed(LEFT_WHEEL_PIN, 0); //turn one wheel
+    pause(300);
+    stopWheels();
+    servo_speed(RIGHT_WHEEL_PIN, TURN_SPEED); //both wheels to avoid collision
+    servo_speed(LEFT_WHEEL_PIN, TURN_SPEED);
+    pause(1100);
+    
+    driveForward();
+    pause(730);
+    servo_speed(RIGHT_WHEEL_PIN, TURN_SPEED);
+    servo_speed(LEFT_WHEEL_PIN, TURN_SPEED);
+    pause(TURN_DELAY);
+    driveForward();
+    
+    pause(1000);
+    servo_speed(RIGHT_WHEEL_PIN, TURN_SPEED);
+    servo_speed(LEFT_WHEEL_PIN, TURN_SPEED);
+    pause(TURN_DELAY+200);*/
+
+    driveForward();
+    pause(1200);
+    knockoff(); //in case theres an object lineup with it and detect  
+    servo_speed(RIGHT_WHEEL_PIN, TURN_SPEED);
+    servo_speed(LEFT_WHEEL_PIN, TURN_SPEED);
+    pause(TURN_DELAY+100);
+    B4A1=false;
+  }  
+  else
+  {
+    driveForward();
+    pause(730);
+    servo_speed(RIGHT_WHEEL_PIN, TURN_SPEED);
+    servo_speed(LEFT_WHEEL_PIN, TURN_SPEED);
+    pause(TURN_DELAY);
+  }
+   //B1A4=false; 
 }
  
 void turnLeft() {
   driveForward();
-  pause(EXTRA_TURN_DELAY);
+  pause(730);
   servo_speed(RIGHT_WHEEL_PIN, TURN_SPEED * -1);
   servo_speed(LEFT_WHEEL_PIN, TURN_SPEED * -1);
   pause(TURN_DELAY);
@@ -255,6 +306,9 @@ void reverseDirection(){
  // cog_end(followLineCog);
   stopWheels(); //adding this reduced the slip for some reason
   //printf("Backing up");
+  adjustRight();
+  pause(300);
+  
   servo_speed(RIGHT_WHEEL_PIN, FORWARD_SPEED );
   servo_speed(LEFT_WHEEL_PIN, (FORWARD_SPEED - 7) * -1);
   pause(BACKINGUP_DELAY);
@@ -263,14 +317,14 @@ void reverseDirection(){
   servo_speed(RIGHT_WHEEL_PIN, REVERSE_SPEED);
   servo_speed(LEFT_WHEEL_PIN, REVERSE_SPEED);
   pause(REVERSE_DELAY);
-  
+  knockOff();  
   //followLineCog = cog_run(followLine, 128);
 }  
 
 void reachObstacle()
 {
   driveForward();
-  pause(400);
+  pause(450);
   obstacleDetected=false;
   detectObstacleCog = cog_run(detectObstacle, 128);
 }   
@@ -279,8 +333,14 @@ void atA4()
 {
   numIntersection=1;
   numPath=4;
-} 
-
+}   
+void knockOff()
+{
+  if(obstaclDetected)
+  {
+    pause(KNOCKOFF_DELAY);  
+  }
+}  
 // obstacle at i2
 void path_one(){
   
@@ -295,6 +355,7 @@ void path_one(){
       break;
       
      case 8: // B4
+      B4A1=true;
       turnRight();
       break;
      
@@ -311,7 +372,7 @@ void path_one(){
       // goto obstacle and turn
       reachObstacle();
       break;
-     
+
      case 14:
       turnRight();
       atA4();
@@ -340,6 +401,7 @@ void path_two()
       break;
     
     case 10 : // B4
+      B4A1=true;
       turnRight();
       break;
     
@@ -381,6 +443,7 @@ void path_three(){
      break;
    
    case 14: // B4
+      B4A1=true;
       turnRight();
       break;
       
@@ -405,14 +468,19 @@ void path_four()
       turnRight();
       break;
     case 5:
+      B4A1=true;
       turnRight();
       break;
       
     case 7:
+      B4A1=true;
       turnRight();
       break;
       
     case 11://b5
+      driveForward();
+      pause(1200);
+      lookForObject=false;
       stopWheels();  
       cog_end(followLineCog);
       break;
