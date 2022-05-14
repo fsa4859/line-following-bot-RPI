@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include "ping.h"
 
-#define OBJECT_PIN
+#define OBJECT_PIN                  1
 
 #define RIGHT_WHEEL_PIN             12
 #define LEFT_WHEEL_PIN              13
@@ -55,7 +55,7 @@ void path_one();
 void path_two();
 void path_three();
 void path_four();
-
+void knockOff();
 // Cogs
 volatile int *followLineCog;
 volatile int *detectObjectCog;
@@ -71,12 +71,12 @@ static volatile bool lookForObject = true;
 static volatile bool pathDetected=false;
 //static volatile bool B1A4=false;
 static volatile bool B4A1=false;
-static volatile bool objectDetected=false;
+//static volatile bool objectDetected=false;
  
 int main() {  
   followLineCog = cog_run(followLine, 128);
-  detectObstacleCog = cog_run(detectObstacle, 128)
-  detectObjectCog=cog_run(objectCheck,128)
+  detectObstacleCog = cog_run(detectObstacle, 128);
+ // detectObjectCog=cog_run(objectCheck,128)
  /* 
   do {
     if(obstacleDetected)
@@ -95,7 +95,7 @@ int main() {
       }      
     }              
   }while(!obstacleDetected);  */
-  while(lookForObject) //continuously check the pin state
+  /*while(lookForObject) //continuously check the pin state
   {
     int obj=input(OBJECT_PIN);
     if(obj==1)
@@ -107,12 +107,12 @@ int main() {
       objectDetected=false;
     }            
   }    
- 
+ */
 }  
 
 void followLine() {
   while(1) {
-    knockoff(); //incase theres and object the hold linefollowing   
+    knockOff(); //incase theres and object the hold linefollowing   
     int leftIR = input(LEFT_IR_PIN);
     int rightIR = input(RIGHT_IR_PIN);
     
@@ -271,7 +271,7 @@ void turnRight() {
 
     driveForward();
     pause(1200);
-    knockoff(); //in case theres an object lineup with it and detect  
+    knockOff(); //in case theres an object lineup with it and detect  
     servo_speed(RIGHT_WHEEL_PIN, TURN_SPEED);
     servo_speed(LEFT_WHEEL_PIN, TURN_SPEED);
     pause(TURN_DELAY+100);
@@ -284,6 +284,7 @@ void turnRight() {
     servo_speed(RIGHT_WHEEL_PIN, TURN_SPEED);
     servo_speed(LEFT_WHEEL_PIN, TURN_SPEED);
     pause(TURN_DELAY);
+    //might need knockoff here
   }
    //B1A4=false; 
 }
@@ -304,6 +305,7 @@ void stopWheels() {
 
 void reverseDirection(){
  // cog_end(followLineCog);
+  knockOff();
   stopWheels(); //adding this reduced the slip for some reason
   //printf("Backing up");
   adjustRight();
@@ -336,8 +338,10 @@ void atA4()
 }   
 void knockOff()
 {
-  if(obstaclDetected)
+  int objectDetected=input(OBJECT_PIN);
+  if(objectDetected==1)
   {
+    stopWheels();
     pause(KNOCKOFF_DELAY);  
   }
 }  
