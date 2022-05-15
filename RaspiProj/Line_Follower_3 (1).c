@@ -183,7 +183,7 @@ void handleIntersectionDetected() {
   if(numIntersection==1) //clear the merge (change this later, the comparisions dont make sense)
   {
     driveForward();
-    pause(700);
+    pause(750);
   }    
   else if(numIntersection > 1) {
     intersectionBlinkCog = cog_run(intersectionBlink, 128);
@@ -458,7 +458,6 @@ void path_four()
       break;
       
     case 7:
-      B4A1=true;
       turnRight();
       break;
       
