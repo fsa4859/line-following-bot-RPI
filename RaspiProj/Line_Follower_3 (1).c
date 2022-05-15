@@ -19,7 +19,7 @@
 #define INTERSECTION_DETECTION_LED  5
 
 #define MAX_OBJECT_DISTANCE         15
-#define MAX_OBSTACLE_DISTANCE       
+#define MAX_OBSTACLE_DISTANCE       4
 
 #define FORWARD_SPEED               30
 #define STOP_SPEED                  20
