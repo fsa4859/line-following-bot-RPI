@@ -33,7 +33,7 @@
 #define REVERSE_DELAY               1700
 #define BACKINGUP_DELAY             1100
 #define DETECTION_DELAY             1000
-#define KNOCKOFF_DELAY              1500
+#define KNOCKOFF_DELAY              2800
 
 // Headers
 void followLine();
@@ -256,7 +256,7 @@ void turnRight() {
   else
   {
     driveForward();
-    pause(730);
+    pause(680);
     servo_speed(RIGHT_WHEEL_PIN, TURN_SPEED);
     servo_speed(LEFT_WHEEL_PIN, TURN_SPEED);
     pause(TURN_DELAY);
