@@ -29,7 +29,7 @@
 
 #define ADJUST_DELAY                10
 #define TURN_DELAY                  900
-#define EXTRA_TURN_DELAY            1900
+#define EXTRA_TURN_DELAY            1200
 #define REVERSE_DELAY               1700
 #define BACKINGUP_DELAY             1100
 #define DETECTION_DELAY             1000
@@ -245,32 +245,8 @@ void adjustLeft() {
 void turnRight() {
   if(B4A1)
   {
-    //failed tests
-    /*
     driveForward();
-    pause(EXTRA_TURN_DELAY); //lineup
-    servo_speed(RIGHT_WHEEL_PIN, TURN_SPEED);
-    servo_speed(LEFT_WHEEL_PIN, 0); //turn one wheel
-    pause(300);
-    stopWheels();
-    servo_speed(RIGHT_WHEEL_PIN, TURN_SPEED); //both wheels to avoid collision
-    servo_speed(LEFT_WHEEL_PIN, TURN_SPEED);
-    pause(1100);
-    
-    driveForward();
-    pause(730);
-    servo_speed(RIGHT_WHEEL_PIN, TURN_SPEED);
-    servo_speed(LEFT_WHEEL_PIN, TURN_SPEED);
-    pause(TURN_DELAY);
-    driveForward();
-    
-    pause(1000);
-    servo_speed(RIGHT_WHEEL_PIN, TURN_SPEED);
-    servo_speed(LEFT_WHEEL_PIN, TURN_SPEED);
-    pause(TURN_DELAY+200);*/
-
-    driveForward();
-    pause(1200);
+    pause(EXTRA_TURN_DELAY);
     knockOff(); //in case theres an object lineup with it and detect  
     servo_speed(RIGHT_WHEEL_PIN, TURN_SPEED);
     servo_speed(LEFT_WHEEL_PIN, TURN_SPEED);
@@ -304,10 +280,8 @@ void stopWheels() {
 }
 
 void reverseDirection(){
- // cog_end(followLineCog);
   knockOff();
-  //stopWheels(); //adding this reduced the slip for some reason
-  //printf("Backing up");
+  
   //adjustRight();
  // pause(300);
   
@@ -319,6 +293,13 @@ void reverseDirection(){
   servo_speed(RIGHT_WHEEL_PIN, REVERSE_SPEED);
   servo_speed(LEFT_WHEEL_PIN, REVERSE_SPEED);
   pause(REVERSE_DELAY);
+  
+  /*
+  //Anticlcokwise rotation
+  servo_speed(RIGHT_WHEEL_PIN, -REVERSE_SPEED);
+  servo_speed(LEFT_WHEEL_PIN, -REVERSE_SPEED);
+  pause(REVERSE_DELAY);
+   */
  // knockOff();  
   //followLineCog = cog_run(followLine, 128);
 }  
@@ -483,7 +464,7 @@ void path_four()
       
     case 11://b5
       driveForward();
-      pause(1200);
+      pause(EXTRA_TURN_DELAY);
       lookForObject=false;
       stopWheels();  
       cog_end(followLineCog);
