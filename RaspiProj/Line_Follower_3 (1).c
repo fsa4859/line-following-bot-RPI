@@ -28,7 +28,7 @@
 #define TURN_SPEED                  55
 
 #define ADJUST_DELAY                10
-#define TURN_DELAY                  900
+#define TURN_DELAY                  800
 #define EXTRA_TURN_DELAY            1200
 #define REVERSE_DELAY               1700
 #define BACKINGUP_DELAY             1100
@@ -237,7 +237,7 @@ void adjustRight() {
 }
 
 void adjustLeft() {
-  servo_speed(RIGHT_WHEEL_PIN, ADJUST_SPEED * -1-30);
+  servo_speed(RIGHT_WHEEL_PIN, ADJUST_SPEED * -1-20);
   servo_speed(LEFT_WHEEL_PIN, STOP_SPEED);
   pause(ADJUST_DELAY);
 }
@@ -256,7 +256,7 @@ void turnRight() {
   else
   {
     driveForward();
-    pause(680);
+    pause(700);
     servo_speed(RIGHT_WHEEL_PIN, TURN_SPEED);
     servo_speed(LEFT_WHEEL_PIN, TURN_SPEED);
     pause(TURN_DELAY);
