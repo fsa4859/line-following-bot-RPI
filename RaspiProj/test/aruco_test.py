@@ -14,6 +14,7 @@ MAX_NUM_ARUCO_CODES = 8
 
 servo = Servo(SERVO_PIN)
 servo.min()
+servo.detach()
 
 # imshow will start the window thread if not already started, however,
 # this give the window more time to initialize
@@ -47,8 +48,8 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     # rotate image by 180 degrees
     image = cv2.rotate(image, cv2.ROTATE_180);
 
-    cv2.imshow('image', image)
-    cv2.waitKey(1)
+    #cv2.imshow('image', image)
+    #cv2.waitKey(1)
 
     arucoDict = aruco.Dictionary_get(cv2.aruco.DICT_6X6_250) #_ARUCO_ORIGINAL
     arucoParams = aruco.DetectorParameters_create()
@@ -81,8 +82,10 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
                         print("enemy detected")
                         # TODO: turn on red LED
                         servo.max()
+                        setvo.detach()
                         time.sleep(HIT_DELAY)
                         servo.min()
+                        servo.detach()
                     else:
                         print("friendly detected")
                         # TODO: turn on green LED
