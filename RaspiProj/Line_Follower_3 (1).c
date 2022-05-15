@@ -19,7 +19,7 @@
 #define INTERSECTION_DETECTION_LED  5
 
 #define MAX_OBJECT_DISTANCE         15
-#define MAX_OBSTACLE_DISTANCE       5
+#define MAX_OBSTACLE_DISTANCE       
 
 #define FORWARD_SPEED               30
 #define STOP_SPEED                  20
@@ -30,8 +30,8 @@
 #define ADJUST_DELAY                10
 #define TURN_DELAY                  900
 #define EXTRA_TURN_DELAY            1900
-#define REVERSE_DELAY               1500
-#define BACKINGUP_DELAY             1400
+#define REVERSE_DELAY               1700
+#define BACKINGUP_DELAY             1100
 #define DETECTION_DELAY             1000
 #define KNOCKOFF_DELAY              1500
 
@@ -122,7 +122,7 @@ void followLine() {
       stopwheels();
       pause(DETECTION_DELAY);
     }  */    
-         
+     
     if(obstacleDetected) {
       reverseDirection();
       obstacleDetected = false;
@@ -306,10 +306,10 @@ void stopWheels() {
 void reverseDirection(){
  // cog_end(followLineCog);
   knockOff();
-  stopWheels(); //adding this reduced the slip for some reason
+  //stopWheels(); //adding this reduced the slip for some reason
   //printf("Backing up");
-  adjustRight();
-  pause(300);
+  //adjustRight();
+ // pause(300);
   
   servo_speed(RIGHT_WHEEL_PIN, FORWARD_SPEED );
   servo_speed(LEFT_WHEEL_PIN, (FORWARD_SPEED - 7) * -1);
@@ -319,14 +319,14 @@ void reverseDirection(){
   servo_speed(RIGHT_WHEEL_PIN, REVERSE_SPEED);
   servo_speed(LEFT_WHEEL_PIN, REVERSE_SPEED);
   pause(REVERSE_DELAY);
-  knockOff();  
+ // knockOff();  
   //followLineCog = cog_run(followLine, 128);
 }  
 
 void reachObstacle()
 {
   driveForward();
-  pause(450);
+  pause(500);
   obstacleDetected=false;
   detectObstacleCog = cog_run(detectObstacle, 128);
 }   
