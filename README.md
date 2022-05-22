@@ -1,4 +1,5 @@
 # line-following and obtsacle detection and hitting utilizing Raspberry PI and Propeller Microcontroller
 
-![IMG_2877_Trim_AdobeCreativeCloudExpress (2)](https://user-images.githubusercontent.com/69100847/169652670-f8e30f7d-d22d-4210-a6db-f3a353238c1a.gif)
+![Demo_Raspberry_PI_AdobeCreativeCloudExpress](https://user-images.githubusercontent.com/69100847/169695375-4b950294-2d5a-4e76-b3f7-24e364433fbd.gif)
+
 
