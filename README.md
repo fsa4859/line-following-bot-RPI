@@ -1,4 +1,4 @@
-# Friendly and enemy identifying robot
+# Identification of Aruco Tags placed on top of objecs.
 
 A line-following robot which avoids obstacles using propeller microcontroller and detects aruco tags to clear friendly or enemy objects using Raspberry Pi 4
 
